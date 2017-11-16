@@ -1,6 +1,6 @@
 {
   "name": "cylinder",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Electron based digital audio workstation piano roll.",
   "main": "index.js",
   "scripts": {
