@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Commode</title>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+  <script>
+    if (typeof module === 'object') {
+      window.module = module;
+      module = undefined;
+    }
+  </script>
+
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+
+  <script src="https://unpkg.com/vue"></script>
+  <script src="https://unpkg.com/lodash@4.16.0"></script>
+
+
+</head>
+
+<body class="bg-light" style="font-size: .7rem;">
+
+  <div id="primary">
+
+    <div class="container-fluid">
+
+      <div class="row" style="border-bottom: 1px solid silver;">
+
+        <div class="col-3 pt-3 text-center">
+
+
+          <div class="btn-group pt-1" role="group" aria-label="Button group with nested dropdown">
+            <button v-on:click="play" type="button" class="btn btn-fade"><i class="fa fa-fw fa-play"></i></button>
+            <div class="btn-group" role="group">
+              <button id="btnGroupDrop1" type="button" class="btn btn-fade dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="fa fa-gears fa-1x"></i>
+              </button>
+              <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                <button v-for="action in actions" v-on:click="selectAction(action)" class="dropdown-item small" type="button"><i :class="'fa fa-fw text-dark fa-'+action.icon"></i> {{action.name}}</button>
+              </div>
+            </div>
+          </div>
+
+
+
+        </div>
+
+        <div class="col-9 pt-1">
+           <div class="alert alert-secondary text-center mb-1" role="alert">
+             <i :class="'fa fa-3x text-dark fa-'+(selectedAction.icon||'paw')"></i>
+             <div class="small">{{status}}</div>
+           </div>
+        </div>
+
+
+      </div>
+
+      <div class="pt-3 bg-light">
+        <div class="row">
+          <div class="col-md-3 pb-3">
+
+            <ul class="nav flex-column pb-2">
+              <li v-for="item in computedFilters" class="nav-item" v-on:click="select(item)"><a class="nav-link text-muted p-0" style="font-size: 1.2em;" href="#"><i class="fa fa-cog text-dark"></i>&nbsp; {{ item.name }}</a></li>
+              <li class="nav-item" v-on:click="deselect"><a class="nav-link text-muted p-0" style="font-size: 1.2em;" href="#"><i class="fa fa-eye text-dark"></i>&nbsp; Show All</a></li>
+            </ul>
+            <div class="nav-item" v-on:click="filtersModal"><a class="nav-link text-muted p-0" style="font-size: 1.2em;" href="#"><i class="fa fa-pencil text-dark"></i>&nbsp; Edit</a></div>
+
+          </div>
+
+
+
+
+
+          <div class="col-md-9">
+
+
+            <div class="container-fluid pb-3 d-none d-md-block d-lg-block d-xl-block">
+
+              <div class="row">
+                <div class="col-2">
+                  <i class="fa fa-list fa-5x text-muted"></i>
+                </div>
+
+                <div class="col-8">
+                  <div class="h4 mb-0">{{title}}</div>
+                  <div class="text-muted pt-0 d-inline-block">{{computedDatabase.length}} Item{{computedDatabase.length==1?'':'s'}}</div>
+                </div>
+
+                <div class="col-2">
+                  <div class="btn-group btn-group-sm float-right" role="group" aria-label="Basic example" >
+                    <button v-for="sorter in sorters" v-on:click="sort(sorter)" type="button" class="btn btn-primary" style="font-size: .7rem;"><i :class="'fa fa-'+sorter.icon"></i></button>
+                  </div>
+                </div>
+
+              </div>
+
+
+            </div>
+
+
+            <!-- -->
+            <div class="container-fluid">
+              <div class="row pb-3">
+                <div class="col-12 p-0">
+
+                  <ul class="list-group">
+                    <li v-for="item in computedDatabase" v-on:click="selectItem(item)" :class="'list-group-item' + ' ' + (selectedItem==item?'active':'')">
+
+                      <i class="fa fa-th"></i> &nbsp; {{ item.name }}
+
+                      <div v-on:click="toggle(item)" class="float-right">&nbsp; <i class="fa fa-cog"></i></div>
+                      <div class="float-right"> <span v-for="tag in item.tags" class="badge badge-light">{{tag}}</span> </div>
+                      <form v-show="opened[item.name] === true">
+                        <div class="row">
+                          <div class="col">
+                            <textarea class="form-control" style="font-size: .8rem;" id="exampleFormControlTextarea1" rows="9">{{ JSON.stringify(item, null, '  ') }}</textarea>
+                          </div>
+                        </div>
+                      </form>
+                    </li>
+                  </ul>
+
+                </div>
+              </div>
+            </div>
+            <!-- -->
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+
+
+
+    <div class="modal fade" id="filtersModal" tabindex="-1" role="dialog" aria-labelledby="filtersModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="filtersModalLabel">Filter Editor &middot; Smartlists</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          </div>
+          <div class="modal-body">
+            <form>
+              <div class="form-group">
+                <label for="exampleFormControlTextarea1">Example textarea</label>
+                <textarea class="form-control" style="font-size: .8rem;" id="exampleFormControlTextarea1" rows="9">{{ JSON.stringify(filters, function(key, val) { if (typeof val === 'function') { return val + ''; } return val; }, '  ') }}</textarea>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-sm btn-primary">Save changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+
+<script>
+  // You can also require other files to run in this process
+  require('./renderer.js')
+</script>
+
+</html>

@@ -1,0 +1,20 @@
+{
+  "name": "cylinder",
+  "version": "1.0.0",
+  "description": "Electron based digital audio workstation piano roll.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fantasyui-com/cylinder.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/fantasyui-com/cylinder/issues"
+  },
+  "homepage": "https://github.com/fantasyui-com/cylinder#readme"
+}
