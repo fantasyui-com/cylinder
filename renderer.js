@@ -1,10 +1,6 @@
-const path = require('path');
-const byKey = require('natural-sort-by-key');
 
 const EventEmitter = require('events');
-
 class MyEmitter extends EventEmitter {}
-
 const myEmitter = new MyEmitter();
 
 
@@ -13,144 +9,81 @@ new Vue({
   el: '#primary',
 
   data: {
-    title:'',
-    subtitle:'',
 
-    filter: null,
-    sorter: null,
-    status: null,
+    bpm: 300,
 
-    selectedItem: {},
-    selectedAction: {},
+    grid:[
 
-    filters: [],
-    sorters: [],
-    actions: [],
+      [ {active:true }, {active:true }, {active:true },{active:true,sound:'click.wav' }, {active:true }, {active:true,sound:'click.wav' },{active:true }, {active:true }, {active:true },{active:true,sound:'click.wav' }, {active:true }, {active:true }, ],
+      [ {active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true }, ],
+      [ {active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true,sound:'click.wav' },{active:true }, {active:true }, {active:true }, ],
+      [ {active:true }, {active:true }, {active:true },{active:true }, {active:true, sound:'click.wav' }, {active:true },{active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true }, ],
+      [ {active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true }, ],
+      [ {active:true }, {active:true }, {active:true,sound:'click.wav' },{active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true },{active:true,sound:'click.wav' }, {active:true }, {active:true }, ],
+      [ {active:true,sound:'click.wav' }, {active:true }, {active:true },{active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true }, ],
 
-    opened:{},
 
-    db: [],
+    ]
+
   },
 
   created: function () {
-    this.unsort();
-    this.deselect();
-    this.update();
+
+    myEmitter.on('cell', function(coordinates){
+      console.log('coordinates',coordinates)
+    })
+
+    for(let y = 1; y<this.grid.length;y++){
+      for(let x = 0; x<this.grid[y].length;x++){
+        this.grid[y][x].active = false;
+      }
+    }
+
+    let y = this.grid.length-2;
+    const payload = ()=>{
+      console.log('TICK')
+      y++;
+      if(y>=this.grid.length) y = 0 ;
+
+        for(let x = 0; x<this.grid[y].length;x++){
+        console.log("/",y,x)
+        if(this.grid[y][x].active ){
+
+          let nextActiveColX = x;
+          let nextActiveColY = y+1;
+          if(nextActiveColY>=this.grid.length) nextActiveColY = 0;
+
+          this.grid[y][x].active = false;
+          this.grid[nextActiveColY][nextActiveColX].active = true;
+          myEmitter.emit('cell', Object.assign({x:nextActiveColX, y:nextActiveColY},this.grid[nextActiveColY][nextActiveColX]));
+        }
+      }
+    }
+    setInterval(payload, (1000*60)/this.bpm);
+    payload();
+
   },
 
   computed: {
 
-    computedFilters: function () {
-      return this.filters;
-    },
+    cellWidth:function(){return 100/this.grid[0].length},
+    cellHeight:function(){return 100/this.grid.length},
 
-    computedDatabase: function () {
-      return this.sorter( this.db.filter( this.filter ) );
-    },
 
   },
 
   methods: {
 
-    filtersModal:  function (e) {
-      $('#filtersModal').modal({})
-    },
+    cellClass:function(cell){
+      if(cell.active&&cell.sound) return 'bg-danger';
 
-    play:function (e) {
-      let app = this;
-
-      if(!this.selectedAction.event){
-        return myEmitter.emit('status', 'You must select an action to apply to items below...');
-      }
-
-      let jobs = Promise.resolve();
-      this.computedDatabase.forEach(item => {
-        jobs = jobs.then(i=>new Promise(function(resolve, reject) {
-          let payload = Object.assign({app, item, resolve, reject},item,app.selectedAction.assign);
-          myEmitter.emit(app.selectedAction.event, payload)
-        }));
-
-      });
-      jobs.then(i=>{
-        myEmitter.emit('status', 'Jobs Done...');
-        this.deselectItem()
-        this.deselectAction()
-      })
-
-    },
-
-    toggle:  function (e) {
-      console.log(e.name)
-      if(this.opened[e.name] === undefined) return Vue.set(this.opened, e.name, true);
-      if(this.opened[e.name] === true) return Vue.set(this.opened, e.name, false);
-      if(this.opened[e.name] === false) return Vue.set(this.opened, e.name, true);
-
-
-
-
-
-    },
-
-    selectItem: function (e) {
-      myEmitter.emit('status', `${e.name}`)
-      this.selectedItem = e;
-    },
-    deselectItem: function (e) {
-      myEmitter.emit('status', ``)
-      this.selectedItem = {};
-    },
-
-    selectAction: function (e) {
-      myEmitter.emit('status', `Selected ${e.name} Action, press play to apply it to the items below...`)
-      this.selectedAction = e;
-    },
-    deselectAction: function (e) {
-      this.selectedAction = {};
+      if(cell.active) return 'bg-info';
+      if(cell.sound) return 'bg-warning';
+      return 'bg-secondary';
     },
 
 
 
-    sort:  function (e) {
-      this.sorter = e.sorter;
-    },
-
-    unsort:  function (e) {
-      this.sorter = list => list.sort(byKey('name'));
-    },
-
-
-
-    select:  function (e) {
-      this.filter = e.filter;
-      this.title = e.name;
-      myEmitter.emit('status', `Viewing ${this.title}`)
-    },
-
-    deselect:  function (e) {
-      this.title = 'All Items';
-      this.filter = i => true;
-      myEmitter.emit('status', `Viewing ${this.title}`)
-
-    },
-
-    update:  function (e) {
-
-      myEmitter.on('status', message => {
-        this.status = message;
-      });
-
-      let dir = path.resolve('./sample-database');
-
-        require(path.join(dir,'action.js')).forEach( i => this.actions.push(i) );
-        require(path.join(dir,'sort.js')).forEach( i => this.sorters.push(i) );
-        require(path.join(dir,'filter.js')).forEach( i => this.filters.push(i) );
-        require(path.join(dir,'data.js')).forEach( i => this.db.push(i) );
-
-        require(path.join(dir,'work.js'))({emitter:myEmitter})
-
-
-        myEmitter.emit('status', 'System Ready...')
-    },
   }
 
 })
