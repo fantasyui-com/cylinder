@@ -10,17 +10,17 @@ new Vue({
 
   data: {
 
-    bpm: 300,
+    bpm: 200,
 
     grid:[
 
-      [ {active:true }, {active:true }, {active:true },{active:true,sound:'click.wav' }, {active:true }, {active:true,sound:'click.wav' },{active:true }, {active:true }, {active:true },{active:true,sound:'click.wav' }, {active:true }, {active:true }, ],
+      [ {active:true }, {active:true }, {active:true },{active:true,sound:'bell.wav' }, {active:true }, {active:true,sound:'crunch.wav' },{active:true }, {active:true }, {active:true },{active:true,sound:'crunch.wav' }, {active:true }, {active:true }, ],
       [ {active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true }, ],
-      [ {active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true,sound:'click.wav' },{active:true }, {active:true }, {active:true }, ],
-      [ {active:true }, {active:true }, {active:true },{active:true }, {active:true, sound:'click.wav' }, {active:true },{active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true }, ],
+      [ {active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true,sound:'crunch.wav' },{active:true }, {active:true }, {active:true }, ],
+      [ {active:true }, {active:true }, {active:true },{active:true }, {active:true, sound:'crunch.wav' }, {active:true },{active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true }, ],
       [ {active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true }, ],
-      [ {active:true }, {active:true }, {active:true,sound:'click.wav' },{active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true },{active:true,sound:'click.wav' }, {active:true }, {active:true }, ],
-      [ {active:true,sound:'click.wav' }, {active:true }, {active:true },{active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true }, ],
+      [ {active:true }, {active:true }, {active:true,sound:'bell.wav' },{active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true },{active:true,sound:'crunch.wav' }, {active:true }, {active:true }, ],
+      [ {active:true,sound:'bell.wav' }, {active:true }, {active:true },{active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true }, ],
 
 
     ]
@@ -30,7 +30,15 @@ new Vue({
   created: function () {
 
     myEmitter.on('cell', function(coordinates){
-      console.log('coordinates',coordinates)
+      console.log('coordinates',coordinates);
+
+      if(coordinates.sound){
+      var sound = new Howl({
+      src: [coordinates.sound]
+      });
+      sound.play();
+      }
+
     })
 
     for(let y = 1; y<this.grid.length;y++){
