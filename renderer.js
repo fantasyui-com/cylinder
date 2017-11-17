@@ -75,11 +75,11 @@ new Vue({
   methods: {
 
     cellClass:function(cell){
-      if(cell.active&&cell.sound) return 'bg-danger';
+      if(cell.active&&cell.sound) return 'cell-active cell-sound';
 
-      if(cell.active) return 'bg-info';
-      if(cell.sound) return 'bg-warning';
-      return 'bg-secondary';
+      if(cell.active) return 'cell-active';
+      if(cell.sound) return 'cell-sound';
+      return 'bg';
     },
 
 
