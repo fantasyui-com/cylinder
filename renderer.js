@@ -10,17 +10,26 @@ new Vue({
 
   data: {
 
-    bpm: 200,
+    bpm: 256,
+
+    sounds: {
+
+      silence: { sound:'', icon:'' },
+      slam: { sound:'slam.wav', icon:'heart' },
+      crunch: { sound:'crunch.wav', icon:'th' },
+
+    },
 
     grid:[
 
-      [ {active:true }, {active:true }, {active:true },{active:true,sound:'bell.wav' }, {active:true }, {active:true,sound:'crunch.wav' },{active:true }, {active:true }, {active:true },{active:true,sound:'crunch.wav' }, {active:true }, {active:true }, ],
-      [ {active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true }, ],
-      [ {active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true,sound:'crunch.wav' },{active:true }, {active:true }, {active:true }, ],
-      [ {active:true }, {active:true }, {active:true },{active:true }, {active:true, sound:'crunch.wav' }, {active:true },{active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true }, ],
-      [ {active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true }, ],
-      [ {active:true }, {active:true }, {active:true,sound:'bell.wav' },{active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true },{active:true,sound:'crunch.wav' }, {active:true }, {active:true }, ],
-      [ {active:true,sound:'bell.wav' }, {active:true }, {active:true },{active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true },{active:true }, {active:true }, {active:true }, ],
+      [ {active:true }, {active:true }, {active:true },{active:true,sound:'slam' }, {active:true }, {active:true,sound:'crunch' },{active:true }, {active:true }, {active:true },{active:true,sound:'crunch' }, {active:true }, {active:true }, ],
+
+      [ {active:false }, {active:false }, {active:false },{active:false,sound:'slam' }, {active:false }, {active:false,sound:'crunch' },{active:false }, {active:false }, {active:false },{active:false,sound:'crunch' }, {active:false }, {active:false }, ],
+      [ {active:false }, {active:false }, {active:false },{active:false }, {active:false }, {active:false },{active:false }, {active:false }, {active:false },{active:false }, {active:false }, {active:false }, ],
+      [ {active:false }, {active:false }, {active:false },{active:false }, {active:false }, {active:false },{active:false }, {active:false }, {active:false,sound:'crunch' },{active:false }, {active:false }, {active:false }, ],
+      [ {active:false }, {active:false }, {active:false },{active:false }, {active:false }, {active:false },{active:false }, {active:false }, {active:false,sound:'crunch' },{active:false }, {active:false }, {active:false }, ],
+      [ {active:false }, {active:false }, {active:false },{active:false }, {active:false }, {active:false },{active:false }, {active:false }, {active:false,sound:'crunch' },{active:false }, {active:false }, {active:false }, ],
+
 
 
     ]
@@ -29,13 +38,17 @@ new Vue({
 
   created: function () {
 
-    myEmitter.on('cell', function(coordinates){
-      console.log('coordinates',coordinates);
+    myEmitter.on('cell', (coordinates) => {
+      //console.log('coordinates',coordinates);
 
       if(coordinates.sound){
-      var sound = new Howl({
-      src: [coordinates.sound]
-      });
+
+        let soundData =  this.sounds[ coordinates.sound ];
+
+        var sound = new Howl({
+          src: [soundData.sound]
+        });
+
       sound.play();
       }
 
@@ -49,12 +62,12 @@ new Vue({
 
     let y = this.grid.length-2;
     const payload = ()=>{
-      console.log('TICK')
+      //console.log('TICK')
       y++;
       if(y>=this.grid.length) y = 0 ;
 
         for(let x = 0; x<this.grid[y].length;x++){
-        console.log("/",y,x)
+        //console.log("/",y,x)
         if(this.grid[y][x].active ){
 
           let nextActiveColX = x;
@@ -82,6 +95,37 @@ new Vue({
 
   methods: {
 
+    nextSound:function(cell){
+
+      let soundIndex = -2;
+
+      if( cell.sound ) {
+        // cell has a sounds
+        soundIndex = Object.keys(this.sounds).indexOf(cell.sound);
+      }
+
+      soundIndex++;
+
+      if(soundIndex < 0){
+        soundIndex = 1;
+      }
+
+
+      if(soundIndex > Object.keys(this.sounds).length-1) {
+        soundIndex = 0;
+      }
+
+      cell.sound =  Object.keys(this.sounds)[soundIndex];
+      if ( cell.sound === 'silence') delete cell.sound
+      console.log(soundIndex,cell.sound)
+      //if (cell.sound) return this.sounds[cell.sound].icon;
+
+    },
+
+    cellIcon:function(cell){
+      if (cell.sound) return this.sounds[cell.sound].icon;
+
+    },
     cellClass:function(cell){
       if(cell.active&&cell.sound) return 'cell-active cell-sound';
 
